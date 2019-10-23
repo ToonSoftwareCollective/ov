@@ -1,13 +1,10 @@
-import QtQuick 1.1
+import QtQuick 2.1
 import qb.components 1.0
 
 Screen {
 	id: ovSettingsScreen
-	screenTitleIconUrl: "./drawables/ovIcon.png"
+	screenTitleIconUrl: "qrc:/tsc/ovIcon.png"
 	screenTitle: "Ov / Instellingen"
-	hasBackButton: false
-	hasHomeButton: false
-	hasCancelButton: true
 
 	anchors {
 		top: parent.top
@@ -18,10 +15,10 @@ Screen {
 
 	onShown: {
 		if (app.settings.stationFilter) updateovHalteLabel(app.settings.stationFilter);
-		addCustomTopRightButton("Kies halte/station");
 	}
 
 	function updateovHalteLabel(text) {
+		console.log("OvJoop: start updateovHalteLabel:");
 		ovHalteLabel.inputText = text;
 		var temp = app.settings; 
 		temp.stationFilter = text;
@@ -31,10 +28,10 @@ Screen {
 	}
 
 	
-	EditTextLabel {
+	EditTextLabel4421 {
 		id: ovHalteLabel
 		width: isNxt ? 800 : 500
-		height: 35
+		height: isNxt ? 45 : 36
 		leftText: "Zoek Halte:"
 		leftTextAvailableWidth: isNxt ? 250 : 200
 		anchors {
@@ -42,7 +39,6 @@ Screen {
 			top: parent.top                       
 			topMargin: 30
 		}
-
 		onClicked: {
 			qkeyboard.open("Station / Halte", ovHalteLabel.inputText, updateovHalteLabel);
 		}

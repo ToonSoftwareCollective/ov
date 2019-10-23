@@ -1,9 +1,9 @@
-import QtQuick 1.1
+import QtQuick 2.1
 import qb.components 1.0
 
 Screen {
 	id: ovScreen
-	screenTitleIconUrl: "./drawables/ovIcon.png"
+	screenTitleIconUrl: "qrc:/tsc/ovIcon.png"
 	screenTitle: app.settings.stopType + app.settings.stationType + " "+ app.settings.name
 	property color colorDark: "#565656"
 	
@@ -71,7 +71,7 @@ Screen {
 		app.getOV();				//reload data
 	}
 	
-	EditTextLabel {
+	EditTextLabel4421 {
 		id: destinationFilter
 		width: isNxt ? 585 : 458
 		height: isNxt ? 35 : 32

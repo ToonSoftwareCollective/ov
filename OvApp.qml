@@ -1,6 +1,7 @@
-import QtQuick 1.1
+import QtQuick 2.1
 import qb.components 1.0
 import qb.base 1.0
+import FileIO 1.0
 
 App {
 	id: ovApp
@@ -8,8 +9,8 @@ App {
 	property url trayUrl : "OvTray.qml"
 	property url tileUrl : "OvTile.qml"
 	
-	property url thumbnailIcon: "./drawables/ovIcon.png"
-	property url tileIcon: "./drawables/ovTile.png"
+	property url thumbnailIcon: "qrc:/tsc/ovIcon.png"
+	property url tileIcon: "qrc:/tsc/ovTile.png"
 	
 	property url ovScreenUrl : "OvScreen.qml"
 	property url ovSettingsUrl : "OvSettings.qml"
@@ -42,6 +43,11 @@ App {
 		"stationFilter" : "",
 	}
 
+	FileIO {
+		id: ovSettingsFile
+		source: "file:///mnt/data/tsc/ov.userSettings.json"
+ 	}
+
 	function init() {
 		registry.registerWidget("tile", tileUrl, this, null, {thumbLabel: qsTr("OV"), thumbIcon: thumbnailIcon, thumbCategory: "general", thumbWeight: 30, baseTileWeight: 10, thumbIconVAlignment: "center"});
 		registry.registerWidget("screen", ovScreenUrl, this, "ovScreen");
@@ -55,31 +61,30 @@ App {
 	}
 
 	function loadSettings()  {
-		var settingsFile = new XMLHttpRequest();
-		settingsFile.onreadystatechange = function(){
-			if (settingsFile.readyState == XMLHttpRequest.DONE) {
-				if (settingsFile.responseText.length > 0)  {
-					settingsLoaded=true
-					
-					var temp = JSON.parse(settingsFile.responseText);
-					for (var setting in settings) {
-						if (!temp[setting])  { temp[setting] = settings[setting]; } // use default if no saved setting exists
-					}
-					settings = temp;
-					depStopType = settings.stopType;
-					depStationType = settings.stationType;
-					if (settings.ovHalte !== "") getOV();
-					ovTimer.start();				
-				}
+
+		//read user settings
+
+		var settingsString = ovSettingsFile.read();
+		console.log("OvJoop settings:" + settingsString);
+		if (settingsString.length > 2)  {
+			settings = JSON.parse(settingsString);
+			settingsLoaded=true
+				
+			var temp = JSON.parse(settingsString);
+			for (var setting in settings) {
+				if (!temp[setting])  { temp[setting] = settings[setting]; } // use default if no saved setting exists
 			}
+			settings = temp;
+			depStopType = settings.stopType;
+			depStationType = settings.stationType;
+			if (settings.ovHalte !== "") getOV();
+			ovTimer.start();				
 		}
-		settingsFile.open("GET", "file:///HCBv2/qml/apps/ov/ov.settings", true);
-		settingsFile.send();
 	}
 	
 	function saveSettings() {
 		var saveFile = new XMLHttpRequest();
-		saveFile.open("PUT", "file:///HCBv2/qml/apps/ov/ov.settings");
+		saveFile.open("PUT", "file:///mnt/data/tsc/ov.userSettings.json");
 		saveFile.send(JSON.stringify(settings));
 		depStopType = settings.stopType;
 		depStationType = settings.stationType;
@@ -87,10 +92,13 @@ App {
 
 	function searchHaltes(searchStr) {
 
+		console.log("OvJoop: start zoekhalte:" + searchStr);
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
+			console.log("OvJoop: statusses:" + xmlhttp.readyState + "-" + xmlhttp.status);
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
 				var res = JSON.parse(xmlhttp.responseText);
+				console.log("OvJoop: result:\n" + xmlhttp.responseText);
 				haltes = res["locations"];
 			}
 		}

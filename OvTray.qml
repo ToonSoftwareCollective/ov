@@ -1,4 +1,4 @@
-import QtQuick 1.1
+import QtQuick 2.1
 
 import qb.components 1.0
 import qb.base 1.0
@@ -18,7 +18,7 @@ SystrayIcon {
 	Image {
 		id: imgOv
 		anchors.centerIn: parent
-		source: "./drawables/ovIcon.png"
+		source: "qrc:/tsc/ovIcon.png"
 	}
 
 }
