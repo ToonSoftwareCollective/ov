@@ -1,0 +1,3 @@
+module apps.ov
+ovApp 1.0 ovApp.qml
+ovScreen 1.0 ovScreen.qml
