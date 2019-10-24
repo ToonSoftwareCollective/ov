@@ -65,7 +65,6 @@ App {
 		//read user settings
 
 		var settingsString = ovSettingsFile.read();
-		console.log("OvJoop settings:" + settingsString);
 		if (settingsString.length > 2)  {
 			settings = JSON.parse(settingsString);
 			settingsLoaded=true
@@ -78,8 +77,8 @@ App {
 			depStopType = settings.stopType;
 			depStationType = settings.stationType;
 			if (settings.ovHalte !== "") getOV();
-			ovTimer.start();				
 		}
+		ovTimer.start();
 	}
 	
 	function saveSettings() {
