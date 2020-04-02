@@ -32,7 +32,7 @@ Tile {
 			family: qfont.bold.name
 			pixelSize: isNxt ? 25 : 20
 		}
-		color: colors.waTileTextColor
+		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.waTileTextColor : colors.waTileTextColor
 	}
 	
 	Text {
@@ -47,7 +47,7 @@ Tile {
 			family: qfont.bold.name
 			pixelSize: isNxt ? 20 : 16
 		}
-		color: colors.waTileTextColor
+		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.waTileTextColor : colors.waTileTextColor
 	}	
 
 	Text {
@@ -62,7 +62,7 @@ Tile {
 			family: qfont.bold.name
 			pixelSize: isNxt ? 25 : 20
 		}
-		color: colors.waTileTextColor
+		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.waTileTextColor : colors.waTileTextColor
 	}
 	
 	Text {
@@ -77,6 +77,6 @@ Tile {
 			family: qfont.bold.name
 			pixelSize: isNxt ? 25 : 20
 		}
-		color: colors.waTileTextColor
+		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.waTileTextColor : colors.waTileTextColor
 	}
 }
