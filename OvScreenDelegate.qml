@@ -6,30 +6,24 @@ Item {
 	width: isNxt ? 900 : 700
 	height: isNxt ? 25 : 19
 	
-	property string depTime
-	property string depDestination
-	property string depLine
-	property string depRealtime
-	property string depRealtimeState
-	property string depPlatform
-	property string depTrainType
-	property string depName
+	property string depTijd
+	property string depRichting
+	property string depLijn
+	property string depMode
+	property string depVervoerder
 	property string showTile
 	property color colorDark: "#565656"
 
 	function colorTime() {
-/*		if ((app.initTile) && (showTile)) {
-			app.depLine = depLine;
-			app.depTime = depTime;
-			app.depRealtime = depRealtime;
-			app.depRealtimeState = depRealtimeState;
-			app.depPlatform = depPlatform;
-			app.depDestination = depDestination;
-			app.depTrainType = depTrainType;
+		if ((app.initTile) && (showTile) && (depRichting.indexOf(app.filter) > -1)) {
+			app.depLijn = depLijn;
+			app.depTijd = depTijd;
+			app.depRichting = depRichting;
+			app.depMode = depMode;
 			app.initTile = false;
 		}
-*/
-		if (depRealtimeState == "op tijd") {
+
+		if (depTijd.indexOf("+") < 0) {
 			return "#00FF00"
 		} else {
 			return "#FF0000"
@@ -43,7 +37,7 @@ Item {
 		Text {
 			id: text1Title
 			width:isNxt ? 60 : 48
-			color: colorDark
+			color: colorTime()
 			anchors {
 			   top: parent.top
 			   topMargin: 5
@@ -54,42 +48,9 @@ Item {
 				family: qfont.semiBold.name
 				pixelSize: isNxt ? 20 : 16
 			}
-			text: depTime
+			text: depTijd
 		}
 
-		Text {
-			id: text1Time
-			width: isNxt ? 100 : 80
-			color: colorTime()
-			anchors {
-			   top: parent.top
-			   topMargin: 5
-			   left: text1Title.right
-			   leftMargin: isNxt ? 10 : 8
-			}
-			font {
-				family: qfont.semiBold.name
-				pixelSize: isNxt ? 20 : 16
-			}
-			text: depRealtime
-		}
-
-		Text {
-			id: state1Time
-			width: isNxt ? 100 : 80
-			color: colorTime()
-			anchors {
-			   top: parent.top
-			   topMargin: 5
-			   left: text1Time.right
-			   leftMargin: isNxt ? 10 : 8
-			}
-			font {
-				family: qfont.semiBold.name
-				pixelSize: isNxt ? 20 : 16
-			}
-			text: depRealtimeState
-		}
 
 		Text {
 			id: text1Data
@@ -98,14 +59,14 @@ Item {
 			anchors {
 			   top: parent.top
 			   topMargin: 5
-			   left: state1Time.right
-			   leftMargin: isNxt ? 10 : 8
+			   left: text1Title.left
+			   leftMargin: isNxt ? 160 : 120
 			}
 			font {
 				family: qfont.semiBold.name
 				pixelSize: isNxt ? 20 : 16
 			}
-			text: depLine + " " + depPlatform
+			text: depLijn
 		}
 
 		Text {
@@ -115,31 +76,31 @@ Item {
 			anchors {
 			   top: parent.top
 			   topMargin: 5
-			   left: text1Data.right
-			   leftMargin: isNxt ? 27 : 22
+			   left: text1Title.left
+			   leftMargin: isNxt ? 365 : 265
 			}
 			font {
 				family: qfont.semiBold.name
 				pixelSize: isNxt ? 20 : 16
 			}
-			text: depDestination
+			text: depRichting
 		}
 
 		Text {
 			id: text1Type
-			width: isNxt ? 75 : 60
+			width: isNxt ? 125 : 100
 			color: colorDark
 			anchors {
 			   top: parent.top
 			   topMargin: 5
-			   left: text1Dest.right
-			   leftMargin: isNxt ? 10 : 8
+			   right: parent.right
+			   rightMargin: isNxt ? 5 : 4
 			}
 			font {
 				family: qfont.semiBold.name
 				pixelSize: isNxt ? 20 : 16
 			}
-			text: depTrainType
+			text: depVervoerder
 		}
 	}
 }

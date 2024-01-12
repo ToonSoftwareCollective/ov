@@ -20,27 +20,31 @@ App {
 	property bool firstLoad: true
 	property bool settingsLoaded: false
 	property bool runningFromTile: false
+	property bool initTile: true
+
 	property variant departures : []
 	property variant haltes : []
 
 		// props for Tile
-	property string depLine
-	property string depTime
-	property string depRealtimeState
-	property string depRealtime
+	property string depLijn
+	property string depTijd
+	property string depVervoeder
+	property string depRichting
 	property string depStopType
-	property string depStationType
-	property string depPlatform
-	property string depDestination
-	property string depTrainType
+	property string depMode
+	property string haltesString : ""
+	property string departuresString : ""
 
-	property variant settings: { 
+	// settings
+	property string ovHalte : ""
+	property string stationFilter : ""
+	property string filter : ""
+	property string screenTitle : ""
+	property variant settings : {
 		"ovHalte" : "",
-		"stopType" : "",
-		"stationType" : "",
-		"name" : "",
 		"filter" : "",
-		"stationFilter" : "",
+		"screenTitle" : "",
+		"stationFilter" : ""
 	}
 
 	FileIO {
@@ -66,27 +70,75 @@ App {
 
 		var settingsString = ovSettingsFile.read();
 		if (settingsString.length > 2)  {
-			settings = JSON.parse(settingsString);
-			settingsLoaded=true
 				
 			var temp = JSON.parse(settingsString);
-			for (var setting in settings) {
-				if (!temp[setting])  { temp[setting] = settings[setting]; } // use default if no saved setting exists
-			}
-			settings = temp;
-			depStopType = settings.stopType;
-			depStationType = settings.stationType;
-			if (settings.ovHalte !== "") getOV();
+			if (temp["ovHalte"]) ovHalte = temp["ovHalte"];
+			if (temp["stationFilter"]) stationFilter= temp["stationFilter"];
+			if (temp["screenTitle"]) screenTitle = temp["screenTitle"];
+			if (temp["filter"]) filter = temp["filter"];
+			if (ovHalte !== "") getOV();
 		}
 		ovTimer.start();
 	}
 	
 	function saveSettings() {
+
+		// save user settings
+ 		var tmpUserSettingsJson = {
+			"ovHalte": ovHalte,
+			"stationFilter": stationFilter,
+			"filter": filter,
+			"screenTitle": screenTitle,
+		}
+
 		var saveFile = new XMLHttpRequest();
 		saveFile.open("PUT", "file:///mnt/data/tsc/ov.userSettings.json");
-		saveFile.send(JSON.stringify(settings));
-		depStopType = settings.stopType;
-		depStationType = settings.stationType;
+		saveFile.send(JSON.stringify(tmpUserSettingsJson ));
+	}
+
+	function decodeHaltes(htmlText) {
+
+		var i = 0;
+		var j = 0;
+		var k = 0;
+		var l = 0;
+		var haltecounter = 0;
+		var href = "";
+		var stoparea = "";
+		var stoptype = "";
+		var naam = "";
+		var komma = "";
+
+		haltesString = '{"Haltes":[';
+
+		i = htmlText.indexOf("<a href");
+		if ( i > 0 ) {
+			while (i > 0) {
+				haltecounter = haltecounter + 1;
+				j = htmlText.indexOf('"', i+10);
+				href = htmlText.substring(i+9,j);
+
+				k = htmlText.indexOf('tt-main-stoparea-title', i);
+				l = htmlText.indexOf('<', k);
+				stoparea = htmlText.substring(k+24,l);
+
+				k = htmlText.indexOf('<b>', l);
+				l = htmlText.indexOf('</b>', k);
+				stoptype = htmlText.substring(k+3,l);
+
+				k = htmlText.indexOf('</b>', k);
+				l = htmlText.indexOf("</div>", k);
+				naam = htmlText.substring(k+5,l-17);
+
+				if (haltecounter > 1) komma = ",";
+
+				haltesString = haltesString + komma + '{"href":"' + href + '","stoparea":"' + stoparea + '","stoptype":"' + stoptype + '","naam":"' + naam + '"}' 
+
+				i = htmlText.indexOf("<a href", i + 10);
+			}
+		}
+		haltesString = haltesString + ']}';
+		haltes = JSON.parse(haltesString);
 	}
 
 	function searchHaltes(searchStr) {
@@ -94,23 +146,21 @@ App {
 		console.log("OvJoop: start zoekhalte:" + searchStr);
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
-			console.log("OvJoop: statusses:" + xmlhttp.readyState + "-" + xmlhttp.status);
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				var res = JSON.parse(xmlhttp.responseText);
-				console.log("OvJoop: result:\n" + xmlhttp.responseText);
-				haltes = res["locations"];
+				decodeHaltes(xmlhttp.responseText);
 			}
 		}
-		xmlhttp.open("GET", "http://api.9292.nl/0.1/locations?lang=nl-NL&q=" + searchStr, true);
+		xmlhttp.open("GET", "https://drgl.nl/searchengine?query=" + searchStr, true);
 		xmlhttp.send();
 
 	}
 
-	function dutchTranslate(text) {
+	function getMode(text) {
                 switch (text) {
-                        case "early": return "eerder";
-                        case "late": return "later";
-                        case "ontime": return "op tijd";
+                        case "Bus": return "Bus";
+                        case "Met": return "Metro";
+                        case "Tra": return "Tram";
+                        case "Vee": return "Boot";
                         default: break;
               }
 		return "?";
@@ -118,36 +168,73 @@ App {
 
 	function getOV(){
 
-	
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.onreadystatechange=function() {
 			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
-				var res = JSON.parse(xmlhttp.responseText);
-				departures = res["tabs"][0]["departures"];
 
-					// fill tile
+				var htmlText = xmlhttp.responseText;
+//				console.log("OV2 dep:" + htmlText);
+				var i = 0;
+				var j = 0;
+				var k = 0;
+				var l = 0;
+				var vertrekcounter = 0;
+				var tijd = "";
+				var lijn = "";
+				var richting = "";
+				var vervoerder = "";
+				var komma = "";
+				initTile = true;
 
-					for (var i = 0; i < departures.length; i++) {
-						if (departures[i]['destinationName'].indexOf(settings.filter) > -1) {
-							depTime = departures[i]['time'];
-							depDestination = departures[i]['destinationName'];
-							depLine = "";
-							if (departures[i]['service']) depLine = departures[i]['service'];
-							depPlatform = "";
-							if (departures[i]['platform']) depPlatform = departures[i]['platform'];
-							depTrainType = "";
-							if (departures[i]['mode']['name']) depTrainType= departures[i]['mode']['name'];
-							depRealtimeState = "";
-							if (departures[i]['realtimeState']) depRealtimeState= dutchTranslate(departures[i]['realtimeState']);
-							depRealtime = "";
-							if (departures[i]['realtimeText']) depRealtime= departures[i]['realtimeText'];
-							break;
-						}	
+				departuresString = '{"Vertrek":[';
+
+				i = htmlText.indexOf('href="/journey/');
+				i = htmlText.indexOf('<div class="ott-dep',i);
+				i = htmlText.indexOf('>',i);
+				if ( i > 0 ) {
+					while (i > 0) {
+						vertrekcounter = vertrekcounter + 1;
+						j = htmlText.indexOf('<', i);
+						tijd = htmlText.substring(i+1,j);
+		
+						k = htmlText.indexOf('<div class="ott-lin', i);
+						k = htmlText.indexOf('>', k);
+						l = htmlText.indexOf('<', k);
+						lijn = htmlText.substring(k+1,l);
+
+						k = htmlText.indexOf('<div class="ott-des', l);
+						k = htmlText.indexOf('>', k);
+						l = htmlText.indexOf('<', k);
+						richting = htmlText.substring(k+1,l);
+						richting = richting.replace(/&#x27;/g, "'")
+
+						k = htmlText.indexOf('<div class="ott-pro', l);
+						k = htmlText.indexOf('>', k);
+						l = htmlText.indexOf('<', k);
+						vervoerder = htmlText.substring(k+1,l);
+						vervoerder = vervoerder.replace(/&bull;/g, "")
+
+						if (vertrekcounter > 1) komma = ",";
+
+						departuresString = departuresString + komma + '{"tijd":"' + tijd + '","lijn":"' + lijn + '","richting":"' + richting + '","vervoerder":"' + vervoerder + '"}' 
+
+						i = htmlText.indexOf('href="/journey/', l);
+						if (i > 0 ) {
+							i = htmlText.indexOf('<div class="ott',i);
+							i = htmlText.indexOf('>',i);
+						}
 					}
+				}
+				departuresString = departuresString + ']}';
+				console.log("OV2 depstr:" + departuresString );
+				departures = JSON.parse(departuresString);
+				console.log("OV2 dep:" + departures["Vertrek"].length);
 			}
 		}
-		xmlhttp.open("GET", "http://api.9292.nl/0.1/locations/" + settings.ovHalte + "/departure-times?lang=nl-NL", true);
+		xmlhttp.open("GET", "https://drgl.nl" + ovHalte, true);
 		xmlhttp.send();
+		console.log("OV2: https://drgl.nl" + ovHalte);
+
 	}
 	
 
@@ -157,7 +244,7 @@ App {
        	 	running: false
         	repeat: true
         	onTriggered: {
-			if (settings.ovHalte !== "") getOV();
+			if (ovHalte !== "") getOV();
 		}
     	}
 }

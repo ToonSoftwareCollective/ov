@@ -8,21 +8,10 @@ Tile {
 		app.ovScreen.show();
 	}
 	
-	function tileTitle() {
-		if (app.depStationType == "Station") {
-			return "Trein Spoor " + app.depPlatform
-		} else {
-			if (app.depStopType == "Bushalte") {
-			 	return "Bus " + app.depLine
-			} else {
-				return app.depTrainType + " " + app.depLine
-			}
-		}
-	}
 
 	Text {
 		id: tileLine
-		text: tileTitle()
+		text: app.depMode + " " + app.depLijn
 		anchors {
 			baseline: parent.top
 			baselineOffset: isNxt ? 30 : 24
@@ -37,7 +26,7 @@ Tile {
 	
 	Text {
 		id: tileDest
-		text: app.depDestination.substring(0,25)
+		text: app.depRichting.substring(0,25)
 		anchors {
 			top: tileLine.bottom
 			topMargin: isNxt ? 15 : 12
@@ -52,7 +41,7 @@ Tile {
 
 	Text {
 		id: tileTime
-		text: app.depTime
+		text: app.depTijd
 		anchors {
 			top: tileDest.bottom
 			topMargin: isNxt ? 15 : 12
@@ -66,16 +55,16 @@ Tile {
 	}
 	
 	Text {
-		id: tileRealTime
-		text: app.depRealtime + " " + app.depRealtimeState
+		id: tileStop
+		text: app.screenTitle
 		anchors {
 			top: tileTime.bottom
-			topMargin: isNxt ? 15 : 12
+			topMargin: isNxt ? 25 : 20
 			horizontalCenter: parent.horizontalCenter
 		}
 		font {
 			family: qfont.bold.name
-			pixelSize: isNxt ? 25 : 20
+			pixelSize: isNxt ? 15 : 12
 		}
 		color: (typeof dimmableColors !== 'undefined') ? dimmableColors.waTileTextColor : colors.waTileTextColor
 	}

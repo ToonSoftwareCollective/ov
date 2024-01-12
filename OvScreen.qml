@@ -3,31 +3,20 @@ import qb.components 1.0
 
 Screen {
 	id: ovScreen
-	screenTitleIconUrl: "qrc:/tsc/ovIcon.png"
-	screenTitle: app.settings.stopType + app.settings.stationType + " "+ app.settings.name
+	screenTitle: app.screenTitle
 	property color colorDark: "#565656"
 	
 	hasBackButton: false
 
 	onShown: {
-		destinationFilter.inputText = app.settings.filter;
 		addCustomTopRightButton("Kies halte/station");
+		updateFilter(app.filter);
 	}
 
 	onCustomButtonClicked: {
 		app.ovSettings.show();
 	}
 	
-	function dutchTranslate(text) {
-                switch (text) {
-                        case "early": return "eerder";
-                        case "late": return "later";
-                        case "ontime": return "op tijd";
-                        default: break;
-              }
-		return "?";
-	}
-
 	Text {
 		id: text1Title
 		width:isNxt ? 60 : 48
@@ -52,21 +41,19 @@ Screen {
 		color: colorDark
 		anchors {
 		   top: text1Title.top
-		   left: text1Title.right
-		   leftMargin: isNxt ? 228 : 180
+		   left: text1Title.left
+		   leftMargin: isNxt ? 160 : 120
 		}
 		font {
 			family: qfont.semiBold.name
 			pixelSize: isNxt ? 20 : 16
 		}
-		text: (app.settings.stationType == "Station") ? "Spoor" : "Lijn"
+		text: "Lijn"
 	}
 
 	function updateFilter(text) {
 		destinationFilter.inputText = text; 	//update screen field
-		var temp = app.settings; 		// save settings (filter)
-		temp.filter = text;
-		app.settings = temp;
+		app.filter = text;
 		app.saveSettings();
 		app.getOV();				//reload data
 	}
@@ -117,17 +104,15 @@ Screen {
 
 		Repeater {
 			id: departuresRepeater
-			model: app.departures
+			model: app.departures["Vertrek"]
 		   	OvScreenDelegate { 
-				visible: ((index <= 11) && (app.departures[index]['destinationName'].indexOf(app.settings.filter) > -1)) ? true : false
-				showTile: (app.departures[index]['destinationName'].indexOf(app.settings.filter) > -1) ? true : false
-				depTime: app.departures[index]['time']
-				depDestination: app.departures[index]['destinationName']
-				depLine: app.departures[index]['service']
-				depPlatform: app.departures[index]['platform']
-				depTrainType: app.departures[index]['mode']['name']
-				depRealtimeState: dutchTranslate(app.departures[index]['realtimeState']) 
-				depRealtime: app.departures[index]['realtimeText']
+				visible: ((index <= 11) && (app.departures["Vertrek"][index]['richting'].indexOf(app.filter) > -1)) ? true : false
+				showTile: (app.departures["Vertrek"][index]['richting'].indexOf(app.filter) > -1) ? true : false
+				depTijd: app.departures["Vertrek"][index]['tijd']
+				depRichting: app.departures["Vertrek"][index]['richting']
+				depVervoerder: app.departures["Vertrek"][index]['vervoerder']
+				depLijn: app.departures["Vertrek"][index]['lijn']
+				depMode: app.getMode(app.screenTitle.substring(0,3))
 			} 
 		}
 	}

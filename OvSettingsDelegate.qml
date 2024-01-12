@@ -5,40 +5,27 @@ import qb.components 1.0
 Item {
 	id: textItem
 	width: isNxt ? 475 : 380
-	property string halteId
-	property string stopType
-	property string stationType
+	property string href
+	property string stoptype
+	property string stoparea
 	property string name
-	property string place
 
-	height: isNxt ? 35 : 28
+	height: isNxt ? 70 : 54
 
 	StandardButton {
 		id: halteButton
 
 		width: isNxt ? 475 : 360
-		height: isNxt ? 30 : 24
+		height: isNxt ? 60 : 48
 		radius: 5
-		text: stopType + stationType + " " + name + " (" + place + ")"
-		fontPixelSize: isNxt ? 18 : 15
+		text: stoptype + " " + stoparea + "\n(" + name + ")"
+		fontPixelSize: isNxt ? 20 : 15
 		color: colors.background
 
-		anchors {
-			top: parent.top
-			topMargin: isNxt ? 5 : 4
-			left: parent.left
-			leftMargin: isNxt ? 5 : 4
-		}
-
 		onClicked: {
-			app.settings.ovHalte = halteId;
-			var temp = app.settings; 
-			temp.ovHalte = halteId;
-			temp.stopType = stopType;
-			temp.stationType = stationType;
-			temp.name = name;
-			temp.filter = "";
-			app.settings = temp;
+			app.ovHalte = href;
+			app.screenTitle = stoptype + " " + stoparea;
+			app.departures = JSON.parse('{"Vertrek":[]}');
 			app.getOV();
 			app.saveSettings();
 			hide();

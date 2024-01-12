@@ -14,15 +14,12 @@ Screen {
 	}
 
 	onShown: {
-		if (app.settings.stationFilter) updateovHalteLabel(app.settings.stationFilter);
+		updateovHalteLabel(app.stationFilter);
 	}
 
 	function updateovHalteLabel(text) {
-		console.log("OvJoop: start updateovHalteLabel:");
 		ovHalteLabel.inputText = text;
-		var temp = app.settings; 
-		temp.stationFilter = text;
-		app.settings = temp;
+		app.stationFilter = text;
 		app.saveSettings();
 		app.searchHaltes(text);
 	}
@@ -62,7 +59,7 @@ Screen {
 	Grid {
 		spacing:10
 		columns: 2
-		rows: 16
+		rows: 8
 		anchors {
 			top: ovText.bottom
 			topMargin: isNxt ? 25 : 20
@@ -71,14 +68,13 @@ Screen {
 
 		Repeater {
 			id: halteRepeater
-			model: app.haltes
+			model: app.haltes["Haltes"]
 		   	OvSettingsDelegate { 
-				visible: ((app.haltes[index]['stopType'] == "Bushalte") || (app.haltes[index]['stopType'] == "Metrostation") || (app.haltes[index]['stopType'] == "Bus-/tramhalte") || (app.haltes[index]['stopType'] == "Tramhalte")  || (app.haltes[index]['stationType'] == "Station"))  ? true : false
-				halteId: app.haltes[index]['id'];
-				stopType: (!app.haltes[index]['stopType']) ? "" : app.haltes[index]['stopType']
-				stationType: (!app.haltes[index]['stationType']) ? "" : app.haltes[index]['stationType']
-				place: app.haltes[index]['place']['name'];
-				name: app.haltes[index]['name'];
+//				visible: (app.haltes["Haltes"][index]['stoptype'] == "Treinstation")  ? false : true
+				href: app.haltes["Haltes"][index]['href']
+				stoptype: app.haltes["Haltes"][index]['stoptype']
+				stoparea: app.haltes["Haltes"][index]['stoparea']
+				name: app.haltes["Haltes"][index]['naam']
 			} 
 		}
 	}
